@@ -1,0 +1,41 @@
+﻿@using TaskManagementSystem.Areas.Identity.Data;
+@model TaskManagementSystem.Models.ViewModels.AssignRoleVM
+
+@{
+    ViewData["Title"] = "Assign Roles";
+}
+
+<h1>Unassigned Users</h1>
+<form asp-action="Index" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    User
+                </th>
+                <th>
+                    Role
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ApplicationUser item in Model.Users)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserName)
+                    </td>
+                    <td>
+                        @Html.DropDownListFor(m => m.Role, @Model.Roles)
+                    </td>
+                    <td>
+                        <input class="btn btn-primary" type="submit" asp-route-userId="@item.Id" value="Add">
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</form>
