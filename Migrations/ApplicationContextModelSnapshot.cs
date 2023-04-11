@@ -34,7 +34,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ProjectsId");
 
-                    b.ToTable("ApplicationUserProjects");
+                    b.ToTable("ApplicationUserProjects", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -259,7 +259,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.Tasks", b =>
@@ -291,7 +291,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.UserProjects", b =>
@@ -315,7 +315,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("UserProjects");
+                    b.ToTable("UserProjects", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationUserProjects", b =>
