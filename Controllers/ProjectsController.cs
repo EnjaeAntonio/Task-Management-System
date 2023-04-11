@@ -76,10 +76,10 @@ namespace TaskManagementSystem.Controllers
 
             _context.Add(userProject);
             await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
 
-            return RedirectToAction(nameof(Index));
-        }
-        return View(projects);
+            }
+            return View(projects);
     }
 
 
