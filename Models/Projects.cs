@@ -12,7 +12,6 @@ namespace TaskManagementSystem.Models
         public string Title { get; set; } = default!;
         public HashSet<UserProjects> UserProjects { get; set; }
         public HashSet<Tasks> Tasks { get; set; } = new HashSet<Tasks>();
-
-        public HashSet<ApplicationUser> Developers { get; set; } = new HashSet<ApplicationUser> { };
+        // public HashSet<ApplicationUser> Developers { get; set; } = new HashSet<ApplicationUser> { };
     }
 }

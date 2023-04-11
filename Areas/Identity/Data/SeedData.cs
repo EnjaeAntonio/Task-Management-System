@@ -41,6 +41,27 @@ public static class SeedData
             await userManager.AddToRoleAsync(seededAdmin, "Administrator");
         }
 
+        // === SEED Developer
+        if (!context.Users.Any(u => u.UserName == "Devtest@.ca"))
+        {
+            ApplicationUser seededDev = new()
+            {
+                Email = "Dev@test.ca",
+                NormalizedEmail = "DEV@TEST.CA",
+                UserName = "Dev@test.ca",
+                NormalizedUserName = "DEV@TEST.CA",
+                EmailConfirmed = true,
+            };
+
+            PasswordHasher<ApplicationUser> hasher = new PasswordHasher<ApplicationUser>();
+            string hashedPw = hasher.HashPassword(seededDev, "TestP@ssword1");
+            seededDev.PasswordHash = hashedPw;
+
+            await userManager.CreateAsync(seededDev);
+            await userManager.AddToRoleAsync(seededDev, "Developer");
+        }
+
+
         await context.SaveChangesAsync();
     }
 }

@@ -24,13 +24,24 @@ namespace TaskManagementSystem.Controllers
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
 
-            List<Projects> projects = _context.UserProjects
+            List<Projects> projects = await _context.UserProjects
                 .Include(up => up.Project)
                 .Where(up => up.ApplicationUserId == currentUser.Id)
                 .Select(up => up.Project)
-                .ToList();
+                .ToListAsync();
 
             return View(projects);
+        }
+
+        public async Task<IActionResult> MyTasks(int projectId)
+        {
+            ApplicationUser currentUser = await _userManager.GetUserAsync(User);
+
+            List<Tasks> tasks = _context.Tasks
+                .Where(t => t.ProjectId == projectId && t.Developers.Any(d => d.Id == currentUser.Id))
+                .ToList();
+
+            return View(tasks);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace TaskManagementSystem.Controllers
     public class ProjectsController : Controller
     {
         private readonly ApplicationContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProjectsController(ApplicationContext context)
+        public ProjectsController(ApplicationContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Projects
@@ -54,18 +57,34 @@ namespace TaskManagementSystem.Controllers
         // POST: Projects/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title")] Projects projects)
+   [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create([Bind("Id,Title")] Projects projects)
+{
+    if (ModelState.IsValid)
+    {
+        ApplicationUser currentUser = await _userManager.GetUserAsync(User);
+
+        // Add the new project to the context
+        _context.Add(projects);
+        await _context.SaveChangesAsync();
+
+        // Create a new UserProjects entry for the current user
+        UserProjects userProject = new UserProjects
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(projects);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(projects);
-        }
+            ApplicationUserId = currentUser.Id,
+            ProjectId = projects.Id
+        };
+
+        // Add the new UserProjects entry to the context
+        _context.Add(userProject);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
+    return View(projects);
+}
+
 
         // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
