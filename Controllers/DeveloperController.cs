@@ -9,7 +9,7 @@ using TaskManagementSystem.Models;
 
 namespace TaskManagementSystem.Controllers
 {
-    [Authorize(Roles = "Developer")]
+    [Authorize(Roles = "Developer, Administrator")]
     public class DeveloperController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -24,10 +24,8 @@ namespace TaskManagementSystem.Controllers
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
 
-            List<Projects> projects = await _context.UserProjects
-                .Include(up => up.Project)
-                .Where(up => up.ApplicationUserId == currentUser.Id)
-                .Select(up => up.Project)
+            List<Projects> projects = await _context.Projects
+                .Where(p => p.Developers.Any(d => d.Id == currentUser.Id))
                 .ToListAsync();
 
             return View(projects);
