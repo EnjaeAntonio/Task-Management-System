@@ -65,18 +65,15 @@ namespace TaskManagementSystem.Controllers
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
 
-            // Add the new project to the context
             _context.Add(projects);
             await _context.SaveChangesAsync();
 
-            // Create a new UserProjects entry for the current user
             UserProjects userProject = new UserProjects
             {
                 ApplicationUserId = currentUser.Id,
                 ProjectId = projects.Id
             };
 
-            // Add the new UserProjects entry to the context
             _context.Add(userProject);
             await _context.SaveChangesAsync();
 
