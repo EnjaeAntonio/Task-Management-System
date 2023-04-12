@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using TaskManagementSystem.Areas.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Build.Evaluation;
+using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
 
 namespace TaskManagementSystem.Controllers
@@ -24,8 +22,8 @@ namespace TaskManagementSystem.Controllers
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
 
-            List<Projects> projects = await _context.Projects
-                .Where(p => p.Developers.Any(d => d.Id == currentUser.Id))
+            List<ApplicationProject> projects = await _context.Projects
+                .Where(p => p.Developers.Any(d => d.ApplicationUserId == currentUser.Id))
                 .ToListAsync();
 
             return View(projects);
@@ -35,9 +33,9 @@ namespace TaskManagementSystem.Controllers
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
 
-            List<Tasks> tasks = _context.Tasks
-                .Where(t => t.ProjectId == projectId && t.Developers.Any(d => d.Id == currentUser.Id))
-                .ToList();
+            List<ApplicationTask> tasks = await _context.Tasks
+                .Where(t => t.ApplicationProjectId == projectId && t.Developers.Any(d => d.ApplicationUserId == currentUser.Id))
+                .ToListAsync();
 
             return View(tasks);
         }

@@ -62,7 +62,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,ProjectManagerId")] Projects projects)
+        public async Task<IActionResult> Create([Bind("Id,Title")] ApplicationProject projects)
         {
             if (ModelState.IsValid)
             {
@@ -95,7 +95,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title")] Projects projects)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title")] ApplicationProject projects)
         {
             if (id != projects.Id)
             {
