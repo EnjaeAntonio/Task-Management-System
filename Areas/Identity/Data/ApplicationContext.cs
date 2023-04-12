@@ -21,7 +21,6 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser>
 //builder.Entity<ApplicationUser>().HasMany<Projects>().WithOne(p => p.ProjectManager).HasForeignKey(p => p.ProjectManagerId).OnDelete(DeleteBehavior.Cascade);
     }
 
-    public DbSet<UserProjects> UserProjects { get; set; }
     public DbSet<Models.Tasks> Tasks { get; set; } = default!;
     public DbSet<Projects> Projects { get; set; } = default!;
 }

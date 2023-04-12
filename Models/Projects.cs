@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using TaskManagementSystem.Areas.Identity.Data;
 
 namespace TaskManagementSystem.Models
@@ -10,9 +10,9 @@ namespace TaskManagementSystem.Models
         [Required(AllowEmptyStrings = false)]
         [StringLength(200, MinimumLength = 5)]
         public string Title { get; set; } = default!;
+        
         public string ProjectManagerId { get; set; }
-        public HashSet<Tasks> Tasks { get; set; } = new HashSet<Tasks>();
-
-        public HashSet<ApplicationUser> Developers { get; set; } = new HashSet<ApplicationUser> { };
+        public virtual HashSet<Tasks> Tasks { get; set; } = new HashSet<Tasks>();
+        public virtual HashSet<ApplicationUser> Developers { get; set; } = new HashSet<ApplicationUser> { };
     }
 }

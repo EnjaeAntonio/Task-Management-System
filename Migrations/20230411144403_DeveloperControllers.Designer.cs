@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagementSystem.Areas.Identity.Data;
 
@@ -11,9 +12,11 @@ using TaskManagementSystem.Areas.Identity.Data;
 namespace TaskManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20230411144403_DeveloperControllers")]
+    partial class DeveloperControllers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -252,10 +255,6 @@ namespace TaskManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ProjectManagerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -296,6 +295,30 @@ namespace TaskManagementSystem.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.UserProjects", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("UserProjects");
                 });
 
             modelBuilder.Entity("ApplicationUserProjects", b =>
@@ -381,10 +404,36 @@ namespace TaskManagementSystem.Migrations
 
                     b.Navigation("Project");
                 });
-                
+
+            modelBuilder.Entity("TaskManagementSystem.Models.UserProjects", b =>
+                {
+                    b.HasOne("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", "ProjectManager")
+                        .WithMany("UserProjects")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskManagementSystem.Models.Projects", "Project")
+                        .WithMany("UserProjects")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("ProjectManager");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", b =>
+                {
+                    b.Navigation("UserProjects");
+                });
+
             modelBuilder.Entity("TaskManagementSystem.Models.Projects", b =>
                 {
                     b.Navigation("Tasks");
+
+                    b.Navigation("UserProjects");
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.Tasks", b =>
