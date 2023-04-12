@@ -46,9 +46,17 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Tasks/Create
-        public IActionResult Create()
+        public IActionResult Create(int? Id)
         {
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title");
+
+            if(Id == null)
+            {
+                return BadRequest();
+            }
+
+            Projects project = _context.Projects.FirstOrDefault(p => p.Id == Id);
+            ViewBag.ProjectId = project.Id;
+            
             return View();
         }
 
@@ -57,14 +65,22 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,RequiredHours,Completed,Priority,ProjectId")] Tasks tasks)
+        public async Task<IActionResult> Create(int Id, [Bind("Title,RequiredHours,Completed,Priority,ProjectId")] Tasks tasks)
         {
+            Projects project = _context.Projects.FirstOrDefault(p => p.Id == Id);
+            ViewBag.ProjectId = project.Id;
+
+            tasks.Project = project;
+            tasks.ProjectId = project.Id;
+
             if (ModelState.IsValid)
             {
+                project.Tasks.Add(tasks);
                 _context.Add(tasks);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title", tasks.ProjectId);
             return View(tasks);
         }

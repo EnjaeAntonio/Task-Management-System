@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
@@ -22,9 +23,11 @@ namespace TaskManagementSystem.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-              return _context.Projects != null ? 
-                          View(await _context.Projects.ToListAsync()) :
-                          Problem("Entity set 'ApplicationContext.Projects'  is null.");
+            var ProjectTasks = await _context.Projects
+                .Include(t => t.Tasks)
+                .ToListAsync();
+
+            return View(ProjectTasks);
         }
 
         // GET: Projects/Details/5
@@ -48,6 +51,9 @@ namespace TaskManagementSystem.Controllers
         // GET: Projects/Create
         public IActionResult Create()
         {
+            ApplicationUser ProjectManager = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
+
+            ViewBag.ProjectManagerId = ProjectManager.Id;
             return View();
         }
 
@@ -56,7 +62,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title")] Projects projects)
+        public async Task<IActionResult> Create([Bind("Id,Title,ProjectManagerId")] Projects projects)
         {
             if (ModelState.IsValid)
             {
@@ -64,6 +70,7 @@ namespace TaskManagementSystem.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(projects);
         }
 

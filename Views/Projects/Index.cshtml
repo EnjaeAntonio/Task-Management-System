@@ -5,32 +5,67 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<h1>Projects</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
+    @foreach (var item in Model) {
     <thead>
         <tr>
+            <th>Project:</th>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
                 @Html.DisplayFor(modelItem => item.Title)
-            </td>
+            </th>
+            <td></td>
+            <td></td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+                <a asp-controller="Tasks" asp-action="Create" asp-route-id="@item.Id">Create Task</a>
             </td>
         </tr>
-}
-    </tbody>
+    </thead>
+    <br />
+    @if(item.Tasks.Count > 0){
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Tasks):
+            </th>
+            <th>
+                Title
+            </th>
+            <th>
+                Required Hours
+            </th>
+            <th>
+                Priority
+            </th>
+            <th>
+                Completed
+            </th>
+        </tr>   
+        @foreach (var task in item.Tasks){
+            <tr>
+                <td></td>
+                <td>
+                    @Html.DisplayFor(modelTask => task.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelTask => task.RequiredHours) Hours 
+                </td>
+                <td>
+                    @Html.DisplayFor(modelTask => task.Priority)
+                </td>
+                <td>
+                     @Html.DisplayFor(modelTask => task.Completed)            
+                </td>
+            </tr>
+            }
+        }
+    }
 </table>
+
+
