@@ -5,8 +5,8 @@ namespace TaskManagementSystem.Models.ViewModels;
 
 public class AssignRoleVM
 {
-    public IEnumerable<ApplicationUser> Users { get; set; }
-    public IEnumerable<SelectListItem> Roles { get; set; }
+    public IEnumerable<ApplicationUser> Users { get; set; } = null!;
+    public IEnumerable<SelectListItem> Roles { get; set; } = null!;
 
-    public string Role { get; set; }
+    public string Role { get; set; } = null!;
 }

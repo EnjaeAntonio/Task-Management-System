@@ -5,6 +5,6 @@ namespace TaskManagementSystem.Areas.Identity.Data;
 
 public class ApplicationUser : IdentityUser
 {
-    public HashSet<Projects> Projects { get; set; } = new HashSet<Projects>();
+    public virtual HashSet<ProjectDeveloper> Projects { get; } = new();
+    public virtual HashSet<TaskDeveloper> Tasks { get; } = new();
 }
-
