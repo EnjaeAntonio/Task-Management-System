@@ -78,11 +78,11 @@ namespace TaskManagementSystem.Controllers
                 project.Tasks.Add(tasks);
                 _context.Add(tasks);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Projects");
             }
 
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title", tasks.ProjectId);
-            return View(tasks);
+            return RedirectToAction("Index", "Projects");
         }
 
         // GET: Tasks/Edit/5
