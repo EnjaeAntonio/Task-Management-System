@@ -65,7 +65,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,RequiredHours,Completed,Priority,ProjectId")] ApplicationTask tasks)
+        public async Task<IActionResult> Create([Bind("Id,Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
         {
             ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == tasks.ApplicationProjectId);
             ViewBag.ProjectId = project.Id;
@@ -106,7 +106,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,RequiredHours,Completed,Priority,ProjectId")] ApplicationTask tasks)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
         {
             if (id != tasks.Id)
             {
