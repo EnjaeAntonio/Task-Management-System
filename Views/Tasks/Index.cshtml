@@ -1,15 +1,11 @@
 ﻿@model IEnumerable<TaskManagementSystem.Models.Tasks>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tasks";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<h1>Tasks</h1>
 <table class="table">
     <thead>
         <tr>
@@ -20,13 +16,13 @@
                 @Html.DisplayNameFor(model => model.RequiredHours)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Completed)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Priority)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Project)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Completed)
             </th>
             <th></th>
         </tr>
@@ -41,13 +37,13 @@
                 @Html.DisplayFor(modelItem => item.RequiredHours)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Completed)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.Priority)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Project.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Completed)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

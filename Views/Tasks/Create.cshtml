@@ -23,21 +23,18 @@
                 <input asp-for="RequiredHours" class="form-control" />
                 <span asp-validation-for="RequiredHours" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="Priority" class="control-label"></label>
+                <select asp-for="Priority" asp-items="@Html.GetEnumSelectList<Priority>()" class="form-control"></select>
+                <span asp-validation-for="Priority" class="text-danger"></span>
+            </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="Completed" /> @Html.DisplayNameFor(model => model.Completed)
                 </label>
             </div>
             <div class="form-group">
-                <label asp-for="Priority" class="control-label"></label>
-                <select asp-for="Priority" class="form-control"></select>
-                <span asp-validation-for="Priority" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectId" class="control-label"></label>
-                <select asp-for="ProjectId" class ="form-control" asp-items="ViewBag.ProjectId"></select>
-            </div>
-            <div class="form-group">
+                <input asp-for="ProjectId" value="@ViewBag.ProjectId" type="hidden">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
