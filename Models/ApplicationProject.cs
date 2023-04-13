@@ -13,7 +13,7 @@ namespace TaskManagementSystem.Models
 
         public string ApplicationUserId { get; set; } = null!;
         [Display(Name = "Project Manager")]
-        public virtual ApplicationUser ProjectManager { get; set; } = null!;
+        public virtual ApplicationUser? ProjectManager { get; set; } = null!;
 
         public virtual HashSet<ApplicationTask> Tasks { get; } = new();
         public virtual HashSet<ProjectDeveloper> Developers { get; } = new();

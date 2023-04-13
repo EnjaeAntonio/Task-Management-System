@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
@@ -49,14 +50,14 @@ namespace TaskManagementSystem.Controllers
         public IActionResult Create(int? Id)
         {
 
-            if(Id == null)
+            if (Id == null)
             {
                 return BadRequest();
             }
 
             ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == Id);
             ViewBag.ProjectId = project.Id;
-            
+
             return View();
         }
 
@@ -65,9 +66,9 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
+        public async Task<IActionResult> Create(int Id, [Bind("Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
         {
-            ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == tasks.ApplicationProjectId);
+            ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == Id);
             ViewBag.ProjectId = project.Id;
 
             tasks.Project = project;
@@ -75,6 +76,7 @@ namespace TaskManagementSystem.Controllers
 
             if (ModelState.IsValid)
             {
+                project.Tasks.Add(tasks);
                 _context.Add(tasks);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "Projects");
@@ -83,6 +85,7 @@ namespace TaskManagementSystem.Controllers
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title", tasks.ApplicationProjectId);
             return RedirectToAction("Index", "Projects");
         }
+
 
         // GET: Tasks/Edit/5
         public async Task<IActionResult> Edit(int? id)
