@@ -18,7 +18,7 @@ namespace TaskManagementSystem.Models
         public Priority Priority { get; set; }
 
         public int ApplicationProjectId { get; set; }
-        public virtual ApplicationProject Project { get; set; } = null!;
+        public virtual ApplicationProject? Project { get; set; } = null!;
 
         public virtual HashSet<TaskDeveloper> Developers { get; } = new();
     }

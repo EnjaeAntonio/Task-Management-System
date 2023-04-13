@@ -49,6 +49,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects/Create
+        // GET: Projects/Create
         public IActionResult Create()
         {
             ApplicationUser ProjectManager = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
@@ -62,7 +63,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title")] ApplicationProject projects)
+        public async Task<IActionResult> Create([Bind("Id,Title,ApplicationUserId")] ApplicationProject projects)
         {
             if (ModelState.IsValid)
             {
