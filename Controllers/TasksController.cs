@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,6 +14,7 @@ using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
+    [Authorize(Roles = "Developer")]
     public class TasksController : Controller
     {
         private readonly ApplicationContext _context;
