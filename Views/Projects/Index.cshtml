@@ -47,7 +47,7 @@
                                     <td>@Html.DisplayFor(modelTask => task.Completed)</td>
                                     <td>
                                         <a asp-action="Edit" asp-controller="Tasks" asp-route-id="@task.Id" class="btn btn-sm btn-primary">Edit</a>
-                                        <a asp-action="Details" asp-route-id="@task.Id" class="btn btn-sm btn-info">Details</a>
+                                        <a asp-action="Details" asp-controller="Tasks" asp-route-id="@task.Id" class="btn btn-sm btn-info">Details</a>
                                         <a asp-action="Assign" asp-controller="Tasks" asp-route-taskId="@task.Id" asp-route-projectId="@item.Id" class="btn btn-sm btn-info">Assign Task</a>
                                         <a asp-action="Delete" asp-controller="Tasks" asp-route-id="@task.Id" class="btn btn-sm btn-danger">Delete</a>
                                     </td>
