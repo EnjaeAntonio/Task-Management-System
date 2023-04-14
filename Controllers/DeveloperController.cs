@@ -18,6 +18,7 @@ namespace TaskManagementSystem.Controllers
             _userManager = userManager;
             _context = context;
         }
+
         public async Task<IActionResult> MyProjects()
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
@@ -39,5 +40,7 @@ namespace TaskManagementSystem.Controllers
 
             return View(tasks);
         }
+
+
     }
 }

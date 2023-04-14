@@ -4,8 +4,10 @@ namespace TaskManagementSystem.Models.ViewModels
 {
     public class AssignTaskViewModel
     {
-        public ApplicationTask Task { get; set; }
-        public List<ApplicationUser> Developers { get; set; }
-        public string SelectedDeveloperId { get; set; }
+        public ApplicationTask Task { get; set; } = null!;
+        public ApplicationProject Project { get; set; } = null!;
+
+        public IEnumerable<ApplicationUser> Developers { get; set; } = null!;
+        public string SelectedDeveloperId { get; set; } = null!;
     }
 }

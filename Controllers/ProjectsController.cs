@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Framework;
@@ -11,21 +13,28 @@ using TaskManagementSystem.Models;
 
 namespace TaskManagementSystem.Controllers
 {
+    [Authorize(Roles = "Project Manager, Developer, Administrator, User")]
     public class ProjectsController : Controller
     {
         private readonly ApplicationContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProjectsController(ApplicationContext context)
+        public ProjectsController(ApplicationContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Projects
         public async Task<IActionResult> Index()
         {
+            string currentUserId = _userManager.GetUserId(User);
+
             var ProjectTasks = await _context.Projects
                 .Include(t => t.Tasks)
+                .Where(p => p.ApplicationUserId == currentUserId)
                 .ToListAsync();
+
 
             return View(ProjectTasks);
         }

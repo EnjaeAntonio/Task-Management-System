@@ -17,80 +17,86 @@ namespace TaskManagementSystem.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<TasksController> _logger;
 
-        public TasksController(ApplicationContext context, UserManager<ApplicationUser> userManager)
+
+        public TasksController(ApplicationContext context, UserManager<ApplicationUser> userManager, ILogger<TasksController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
         // GET: Tasks
         public async Task<IActionResult> Index()
         {
-            var applicationContext = _context.Tasks.Include(t => t.Project);
-            return View(await applicationContext.ToListAsync());
+            var tasks = await _context.Tasks
+              .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
+              .Include(t => t.Project)
+              .ToListAsync();
+
+            return View(tasks);
         }
 
-        public async Task<IActionResult> AssignTask(int taskId)
+        public async Task<IActionResult> Assign(int? taskId, int? projectId)
         {
+            if (taskId == null || projectId == null)
+            {
+                return NotFound();
+            }
+
+            var task = _context.Tasks
+                .Include(t => t.Project)
+                .FirstOrDefault(p => p.Id == taskId);
+            var project = _context.Projects.Find(projectId);
+
+            if (task == null || project == null)
+            {
+                return NotFound();
+            }
+
+            var developers = await _userManager.GetUsersInRoleAsync("Developer");
+
+            AssignTaskViewModel viewModel = new AssignTaskViewModel()
+            {
+                Project = project,
+                Task = task,
+                Developers = developers,
+            };
+
+            return View(viewModel);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Assign(int? taskId, int? projectId, AssignTaskViewModel viewModel)
+        {
+            var project = await _context.Projects.FindAsync(projectId);
             var task = await _context.Tasks.FindAsync(taskId);
 
             if (task == null)
             {
                 return NotFound();
             }
-
-            string devName = "Developer";
-            var developers = await _userManager.GetUsersInRoleAsync("Developer");
-
-            var developerSelectList = developers.Select(d => new SelectListItem
+            var taskDeveloper = new TaskDeveloper
             {
-                Value = d.Id,
-                Text = d.NormalizedUserName
-            });
+                ApplicationTaskId = task.Id,
+                ApplicationUserId = viewModel.SelectedDeveloperId
+            };
 
-            var viewModel = new AssignTaskViewModel
+            var projectDeveloper = new ProjectDeveloper
             {
-                Task = task,
-                Developers = developerSelectList.Select(d => new ApplicationUser
-                {
-                    Id = d.Value,
-                    NormalizedUserName = d.Text
-                }).ToList()
-        };
+                ApplicationUserId = viewModel.SelectedDeveloperId,
+                ApplicationProjectId = project.Id
+            };
 
-            return View(viewModel);
+            _context.TaskDevelopers.Add(taskDeveloper);
+            _context.ProjectDevelopers.Add(projectDeveloper);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AssignTask(AssignTaskViewModel viewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                var task = await _context.Tasks.FindAsync(viewModel.Task.Id);
-
-                if (task == null)
-                {
-                    return NotFound();
-                }
-
-                var developer = await _userManager.FindByIdAsync(viewModel.SelectedDeveloperId);
-
-                if (developer == null)
-                {
-                    return NotFound();
-                }
-
-
-                var taskDeveloper = new TaskDeveloper { Task = task, User = developer };
-                task.Developers.Add(taskDeveloper); await _context.SaveChangesAsync();
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("Index", "Tasks");
-            }
-
-            return View(viewModel);
-        }
 
         // GET: Tasks/Details/5
         public async Task<IActionResult> Details(int? id)
