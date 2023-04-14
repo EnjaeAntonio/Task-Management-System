@@ -28,15 +28,63 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Tasks
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? ProjectId, string OrderBy, string OrderDirection, bool? ShowCompleted, bool? ShowAssigned)
         {
+            string currentUserId = _userManager.GetUserId(User);
+
             var tasks = await _context.Tasks
-              .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
-              .Include(t => t.Project)
-              .ToListAsync();
+                .Include(t => t.Project)
+                .Where(t => t.Project.ApplicationUserId == currentUserId)
+                .ToListAsync();
+
+            if (ProjectId.HasValue)
+            {
+                tasks = tasks
+                    .Where(t => t.ApplicationProjectId == ProjectId.Value)
+                    .ToList();
+            }
+
+            if (!ShowCompleted.GetValueOrDefault())
+            {
+                tasks = tasks
+                    .Where(t => !t.Completed)
+                    .ToList();
+            }
+
+            if (!ShowAssigned.GetValueOrDefault())
+            {
+                tasks = tasks
+                    .Where(t => !t.Developers.Any())
+                    .ToList();
+            }
+
+            switch (OrderBy)
+            {
+                case "RequiredHours":
+                    if (OrderDirection == "Ascending")
+                    {
+                        tasks = tasks.OrderBy(t => t.RequiredHours).ToList();
+                    }
+                    else
+                    {
+                        tasks = tasks.OrderByDescending(t => t.RequiredHours).ToList();
+                    }
+                    break;
+                case "Priority":
+                    if (OrderDirection == "Ascending")
+                    {
+                        tasks = tasks.OrderBy(t => t.Priority).ToList();
+                    }
+                    else
+                    {
+                        tasks = tasks.OrderByDescending(t => t.Priority).ToList();
+                    }
+                    break;
+            }
 
             return View(tasks);
         }
+
 
         public async Task<IActionResult> Assign(int? taskId, int? projectId)
         {
