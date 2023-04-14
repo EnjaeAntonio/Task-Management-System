@@ -32,11 +32,12 @@ namespace TaskManagementSystem.Controllers
         {
             string currentUserId = _userManager.GetUserId(User);
 
-            var tasks = await _context.Tasks
-                .Include(t => t.Project)
-                .Where(t => t.Project.ApplicationUserId == currentUserId)
-                .ToListAsync();
+                var tasks = await _context.Tasks
+                  .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
+                  .Include(t => t.Project)
+                  .ToListAsync();
 
+   
             if (ProjectId.HasValue)
             {
                 tasks = tasks
