@@ -22,21 +22,6 @@ namespace TaskManagementSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ApplicationUserProjects", b =>
-                {
-                    b.Property<string>("DevelopersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("ProjectsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("DevelopersId", "ProjectsId");
-
-                    b.HasIndex("ProjectsId");
-
-                    b.ToTable("ApplicationUserProjects");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -219,9 +204,6 @@ namespace TaskManagementSystem.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TasksId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -239,12 +221,10 @@ namespace TaskManagementSystem.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.HasIndex("TasksId");
-
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TaskManagementSystem.Models.Projects", b =>
+            modelBuilder.Entity("TaskManagementSystem.Models.ApplicationProject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -252,9 +232,9 @@ namespace TaskManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ProjectManagerId")
+                    b.Property<string>("ApplicationUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -263,10 +243,12 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects");
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("Projects", (string)null);
                 });
 
-            modelBuilder.Entity("TaskManagementSystem.Models.Tasks", b =>
+            modelBuilder.Entity("TaskManagementSystem.Models.ApplicationTask", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -274,13 +256,13 @@ namespace TaskManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ApplicationProjectId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Completed")
                         .HasColumnType("bit");
 
                     b.Property<int>("Priority")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
                     b.Property<int>("RequiredHours")
@@ -293,24 +275,57 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ApplicationProjectId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
-            modelBuilder.Entity("ApplicationUserProjects", b =>
+            modelBuilder.Entity("TaskManagementSystem.Models.ProjectDeveloper", b =>
                 {
-                    b.HasOne("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("DevelopersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.HasOne("TaskManagementSystem.Models.Projects", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicationProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationProjectId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("ProjectDevelopers", (string)null);
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.TaskDeveloper", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicationTaskId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationTaskId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("TaskDevelopers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -364,30 +379,81 @@ namespace TaskManagementSystem.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", b =>
+            modelBuilder.Entity("TaskManagementSystem.Models.ApplicationProject", b =>
                 {
-                    b.HasOne("TaskManagementSystem.Models.Tasks", null)
-                        .WithMany("Developers")
-                        .HasForeignKey("TasksId");
+                    b.HasOne("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", "ProjectManager")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProjectManager");
                 });
 
-            modelBuilder.Entity("TaskManagementSystem.Models.Tasks", b =>
+            modelBuilder.Entity("TaskManagementSystem.Models.ApplicationTask", b =>
                 {
-                    b.HasOne("TaskManagementSystem.Models.Projects", "Project")
+                    b.HasOne("TaskManagementSystem.Models.ApplicationProject", "Project")
                         .WithMany("Tasks")
-                        .HasForeignKey("ProjectId")
+                        .HasForeignKey("ApplicationProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Project");
                 });
-                
-            modelBuilder.Entity("TaskManagementSystem.Models.Projects", b =>
+
+            modelBuilder.Entity("TaskManagementSystem.Models.ProjectDeveloper", b =>
                 {
+                    b.HasOne("TaskManagementSystem.Models.ApplicationProject", "Project")
+                        .WithMany("Developers")
+                        .HasForeignKey("ApplicationProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", "User")
+                        .WithMany("Projects")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.TaskDeveloper", b =>
+                {
+                    b.HasOne("TaskManagementSystem.Models.ApplicationTask", "Task")
+                        .WithMany("Developers")
+                        .HasForeignKey("ApplicationTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", "User")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Areas.Identity.Data.ApplicationUser", b =>
+                {
+                    b.Navigation("Projects");
+
                     b.Navigation("Tasks");
                 });
 
-            modelBuilder.Entity("TaskManagementSystem.Models.Tasks", b =>
+            modelBuilder.Entity("TaskManagementSystem.Models.ApplicationProject", b =>
+                {
+                    b.Navigation("Developers");
+
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("TaskManagementSystem.Models.ApplicationTask", b =>
                 {
                     b.Navigation("Developers");
                 });
