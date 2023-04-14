@@ -1,0 +1,21 @@
+﻿@model TaskManagementSystem.Models.ViewModels.AssignTaskViewModel
+
+@{
+    ViewData["Title"] = "Assign";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Assign Developer to Task: @Model.Task.Title</h2>
+
+<form asp-controller="Tasks" asp-action="Assign" method="post">
+    <input type="hidden" name="taskId" value="@Model.Task.Id" />
+    <input type="hidden" name="projectId" value="@Model.Project.Id" />
+    <div class="form-group">
+        <label asp-for="SelectedDeveloperId">Developer</label>
+        <select asp-for="SelectedDeveloperId" class="form-control" asp-items="@(new SelectList(Model.Developers, "Id", "UserName"))">
+            <option value="">-- Select Developer --</option>
+        </select>
+        <p>Selected developer ID: @Model.SelectedDeveloperId</p>
+    </div>
+    <button type="submit" class="btn btn-primary">Assign</button>
+</form>
