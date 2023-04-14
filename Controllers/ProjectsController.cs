@@ -49,7 +49,6 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects/Create
-        // GET: Projects/Create
         public IActionResult Create()
         {
             ApplicationUser ProjectManager = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);

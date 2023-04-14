@@ -2,22 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
+using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
     public class TasksController : Controller
     {
         private readonly ApplicationContext _context;
+        private readonly UserManager<IdentityRole> _userManager;
 
-        public TasksController(ApplicationContext context)
+        public TasksController(ApplicationContext context, UserManager<IdentityRole> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Tasks
@@ -25,6 +29,37 @@ namespace TaskManagementSystem.Controllers
         {
             var applicationContext = _context.Tasks.Include(t => t.Project);
             return View(await applicationContext.ToListAsync());
+        }
+
+        public async Task<IActionResult> AssignTask(int taskId)
+        {
+            var task = await _context.Tasks.FindAsync(taskId);
+            return View();
+
+            if(task == null)
+            {
+                return NotFound();
+            }
+
+            string devName = "Developer";
+            var developers = await _userManager.GetUsersInRoleAsync("Developer");
+
+
+            var developerSelectList = developers.Select(d => new SelectListItem
+            {
+                Value = d.Id,
+                Text = d.NormalizedName
+            });
+
+            var viewModel = new AssignTaskViewModel
+            {
+                Task = task,
+                Developers = (List<ApplicationUser>)developerSelectList
+            };
+
+
+            return View(viewModel);
+
         }
 
         // GET: Tasks/Details/5
