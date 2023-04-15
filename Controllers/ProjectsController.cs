@@ -10,10 +10,11 @@ using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
+using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
-    [Authorize(Roles = "Project Manager, Administrator")]
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationContext _context;
@@ -21,6 +22,7 @@ namespace TaskManagementSystem.Controllers
 
         public ProjectsController(ApplicationContext context, UserManager<ApplicationUser> userManager)
         {
+            _userManager = userManager;
             _context = context;
             _userManager = userManager;
         }
@@ -31,10 +33,9 @@ namespace TaskManagementSystem.Controllers
             string currentUserId = _userManager.GetUserId(User);
 
             var ProjectTasks = await _context.Projects
-                .Include(t => t.Tasks)
-                .Where(p => p.ApplicationUserId == currentUserId)
-                .ToListAsync();
-
+              .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
+              .Include(t => t.Tasks)
+              .ToListAsync();
 
             return View(ProjectTasks);
         }
@@ -49,6 +50,7 @@ namespace TaskManagementSystem.Controllers
 
             var projects = await _context.Projects
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (projects == null)
             {
                 return NotFound();
@@ -58,12 +60,21 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects/Create
-        public IActionResult Create()
+        // GET: Projects/Create
+        public async Task<IActionResult> Create()
         {
             ApplicationUser ProjectManager = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
 
+            var developers = await _userManager.GetUsersInRoleAsync("Developer");
             ViewBag.ProjectManagerId = ProjectManager.Id;
-            return View();
+
+            CreateProjectViewModel vm = new CreateProjectViewModel
+            {
+                Developers = developers,
+                ApplicationUserId = ProjectManager.Id,
+                ProjectManager = ProjectManager
+            };
+            return View(vm);
         }
 
         // POST: Projects/Create
@@ -71,16 +82,36 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,ApplicationUserId")] ApplicationProject projects)
+        public async Task<IActionResult> Create(CreateProjectViewModel CreateProject)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(projects);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            HashSet <ProjectDeveloper> projectDevelopers = new HashSet <ProjectDeveloper> ();
 
-            return View(projects);
+            ApplicationProject projects = new ApplicationProject
+            {
+                Title = CreateProject.Title,
+                ApplicationUserId = CreateProject.ApplicationUserId,
+                ProjectManager = await _context.Users.FindAsync(CreateProject.ApplicationUserId),
+                Developers = projectDevelopers,
+            };
+
+            foreach (string userId in CreateProject.SelectedDevelopersIdList)
+            {
+                var projectDeveloper = new ProjectDeveloper
+                {
+                    ApplicationUserId =  userId,
+                    ApplicationProjectId = projects.Id,
+                };
+
+                _context.ProjectDevelopers.Add(projectDeveloper);
+
+                projects.Developers.Add(projectDeveloper);
+            };
+
+
+            _context.Add(projects);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Projects/Edit/5
@@ -144,6 +175,9 @@ namespace TaskManagementSystem.Controllers
 
             var projects = await _context.Projects
                 .FirstOrDefaultAsync(m => m.Id == id);
+
+            ViewBag.Count = projects.Developers.Count();
+
             if (projects == null)
             {
                 return NotFound();
@@ -166,7 +200,9 @@ namespace TaskManagementSystem.Controllers
             {
                 _context.Projects.Remove(projects);
             }
-            
+
+            ViewBag.Count = projects.Developers.Count();
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

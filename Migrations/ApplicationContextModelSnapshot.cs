@@ -245,7 +245,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.ApplicationTask", b =>
@@ -277,7 +277,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ApplicationProjectId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.ProjectDeveloper", b =>
@@ -301,7 +301,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("ProjectDevelopers");
+                    b.ToTable("ProjectDevelopers", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagementSystem.Models.TaskDeveloper", b =>
@@ -325,7 +325,7 @@ namespace TaskManagementSystem.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("TaskDevelopers");
+                    b.ToTable("TaskDevelopers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

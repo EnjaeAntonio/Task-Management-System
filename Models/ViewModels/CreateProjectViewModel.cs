@@ -1,21 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TaskManagementSystem.Areas.Identity.Data;
 
-namespace TaskManagementSystem.Models
+namespace TaskManagementSystem.Models.ViewModels
 {
-    public class ApplicationProject
+    public class CreateProjectViewModel
     {
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(200, MinimumLength = 5)]
         public string Title { get; set; } = null!;
-
         public string ApplicationUserId { get; set; } = null!;
         [Display(Name = "Project Manager")]
         public virtual ApplicationUser? ProjectManager { get; set; } = null!;
-
-        public virtual HashSet<ApplicationTask> Tasks { get; } = new();
-        public HashSet<ProjectDeveloper> Developers { get; set; } = new();
+        public IEnumerable<ApplicationUser> Developers { get; set; } = null!;
+        public List<string> SelectedDevelopersIdList { get; set; } = null!;
+        
     }
 }
