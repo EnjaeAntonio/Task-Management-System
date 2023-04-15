@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
-    [Authorize(Roles ="Project Manager, Administrator")]
+    [Authorize(Roles = "Project Manager")]
     public class ProjectsController : Controller
     {
         private readonly ApplicationContext _context;
