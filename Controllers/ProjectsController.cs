@@ -14,7 +14,7 @@ using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
-    [Authorize(Roles = "Project Manager")]
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationContext _context;
@@ -30,14 +30,29 @@ namespace TaskManagementSystem.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            string currentUserId = _userManager.GetUserId(User);
+            ApplicationUser CurrentUser = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
 
-            var ProjectTasks = await _context.Projects
-              .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
-              .Include(t => t.Tasks)
-              .ToListAsync();
+            var Role = await _userManager.GetRolesAsync(CurrentUser);
 
-            return View(ProjectTasks);
+            if (Role.Contains("Developer"))
+            {
+                var ProjectTasks = await _context.Projects
+                    .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
+                    .Include(t => t.Tasks)
+                    .ToListAsync();
+
+                return View(ProjectTasks.OrderBy(p => p.Title));
+            }
+            else if (Role.Contains("Administrator") || Role.Contains("Project Manager"))
+            {
+                var ProjectTasks = await _context.Projects
+                    .Include(t => t.Tasks)
+                    .ToListAsync();
+
+                return View(ProjectTasks.OrderBy(p => p.Title));
+            }
+
+            return View();
         }
 
         // GET: Projects/Details/5
@@ -60,7 +75,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects/Create
-        // GET: Projects/Create
+        [Authorize(Roles ="Project Manager")]
         public async Task<IActionResult> Create()
         {
             ApplicationUser ProjectManager = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
@@ -115,6 +130,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects/Edit/5
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Projects == null)
@@ -166,6 +182,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects/Delete/5
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Projects == null)
