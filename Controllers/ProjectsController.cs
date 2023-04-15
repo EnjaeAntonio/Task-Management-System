@@ -14,7 +14,7 @@ using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Project Manager, Administrator")]
     public class ProjectsController : Controller
     {
         private readonly ApplicationContext _context;
