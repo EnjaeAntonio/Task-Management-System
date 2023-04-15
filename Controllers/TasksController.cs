@@ -14,7 +14,6 @@ using TaskManagementSystem.Models.ViewModels;
 
 namespace TaskManagementSystem.Controllers
 {
-    [Authorize(Roles = "Developer")]
     public class TasksController : Controller
     {
         private readonly ApplicationContext _context;
@@ -30,6 +29,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Tasks
+        [Authorize(Roles = "Developer")]
         public async Task<IActionResult> Index(int? ProjectId, string OrderBy, string OrderDirection, bool? ShowCompleted, bool? ShowAssigned)
         {
             string currentUserId = _userManager.GetUserId(User);
@@ -88,7 +88,7 @@ namespace TaskManagementSystem.Controllers
             return View(tasks);
         }
 
-
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Assign(int? taskId, int? projectId)
         {
             if (taskId == null || projectId == null)
@@ -120,6 +120,7 @@ namespace TaskManagementSystem.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Assign(int? taskId, int? projectId, AssignTaskViewModel viewModel)
         {
             var project = await _context.Projects.FindAsync(projectId);
@@ -145,11 +146,12 @@ namespace TaskManagementSystem.Controllers
             _context.ProjectDevelopers.Add(projectDeveloper);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Projects");
         }
 
 
         // GET: Tasks/Details/5
+        [Authorize(Roles = "Project Manager, Developer")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Tasks == null)
@@ -169,6 +171,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Tasks/Create
+        [Authorize(Roles = "Project Manager")]
         public IActionResult Create(int? Id)
         {
 
@@ -188,6 +191,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Create(int Id, [Bind("Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
         {
             ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == Id);
@@ -210,6 +214,7 @@ namespace TaskManagementSystem.Controllers
 
 
         // GET: Tasks/Edit/5
+        [Authorize(Roles = "Project Manager, Developer")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Tasks == null)
@@ -231,6 +236,7 @@ namespace TaskManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Project Manager, Developer")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
         {
             if (id != tasks.Id)
@@ -263,6 +269,7 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Tasks/Delete/5
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Tasks == null)
@@ -284,6 +291,7 @@ namespace TaskManagementSystem.Controllers
         // POST: Tasks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Tasks == null)

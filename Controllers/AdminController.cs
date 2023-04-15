@@ -16,7 +16,7 @@ namespace TaskManagementSystem.Controllers
         private readonly IEnumerable<SelectListItem> _assignableRoles = new List<SelectListItem>()
         {
             new SelectListItem("Developer", "Developer"),
-            new SelectListItem("Project Manager", "ProjectManager")
+            new SelectListItem("Project Manager", "Project Manager")
         };
 
         public AdminController(UserManager<ApplicationUser> userManager, ApplicationContext context)
