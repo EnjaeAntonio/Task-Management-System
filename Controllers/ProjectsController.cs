@@ -35,7 +35,7 @@ namespace TaskManagementSystem.Controllers
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
             IList<string> roles = await _userManager.GetRolesAsync(currentUser);
 
-            int pageSize = 3;
+            int pageSize = 10;
 
             ProjectListViewModel vm = new()
             {
