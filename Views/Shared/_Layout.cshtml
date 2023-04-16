@@ -28,27 +28,23 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            ApplicationUser user = await UserManager.GetUserAsync(User);
+                        @{
+                            if (SignInManager.IsSignedIn(User))
+                            {
+                                IList<string> roles = await UserManager.GetRolesAsync(await UserManager.GetUserAsync(User));
 
-                            @if (await UserManager.IsInRoleAsync(user, "Developer"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Tasks" asp-action="Index">Tasks</a>
-                                </li>
-                            }
-                            else if (await UserManager.IsInRoleAsync(user, "Project Manager"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a>
-                                </li>
-                            }
-                            else if (await UserManager.IsInRoleAsync(user, "Administrator"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Assign Roles</a>
-                                </li>
+                                if (roles.Contains("Developer") || roles.Contains("Project Manager"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a>
+                                    </li>
+                                }
+                                else if (roles.Contains("Administrator"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Assign Roles</a>
+                                    </li>
+                                }
                             }
                         }
                     </ul>
@@ -62,7 +58,6 @@
             @RenderBody()
         </main>
     </div>
-
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2023 - TaskManagementSystem
