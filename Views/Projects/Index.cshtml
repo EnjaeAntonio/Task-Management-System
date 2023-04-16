@@ -112,3 +112,23 @@
         </form>
     </div>
 </div>
+
+@if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+{
+        <nav aria-label="Project pagination">
+            <ul class="pagination">
+                <li class="page-item @((Model.Pagination.CurrentPage == 1) ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.Pagination.CurrentPage - 1, orderBy = Model.OrderBy, orderDirection = Model.OrderDirection, showCompleted = Model.ShowCompleted, showAssigned = Model.ShowAssigned })">Previous</a>
+                </li>
+            @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+            {
+                        <li class="page-item @((Model.Pagination.CurrentPage == i) ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pageNumber = i, orderBy = Model.OrderBy, orderDirection = Model.OrderDirection, showCompleted = Model.ShowCompleted, showAssigned = Model.ShowAssigned })">@i</a>
+                        </li>
+            }
+                <li class="page-item @((Model.Pagination.CurrentPage == Model.Pagination.TotalPages) ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.Pagination.CurrentPage + 1, orderBy = Model.OrderBy, orderDirection = Model.OrderDirection, showCompleted = Model.ShowCompleted, showAssigned = Model.ShowAssigned })">Next</a>
+                </li>
+            </ul>
+        </nav>
+}

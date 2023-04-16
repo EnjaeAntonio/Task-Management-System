@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
+using System.Drawing.Printing;
+using System.Transactions;
 using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
 using TaskManagementSystem.Models.ViewModels;
@@ -23,17 +25,25 @@ namespace TaskManagementSystem.Controllers
         }
 
         // GET: Projects
-        public async Task<IActionResult> Index(TaskOrderBy orderBy, ListSortDirection orderDirection, bool showCompleted = true, bool showAssigned = true)
+        public async Task<IActionResult> Index(
+            TaskOrderBy orderBy,
+            ListSortDirection orderDirection,
+            bool showCompleted = true,
+            bool showAssigned = true,
+            int pageNumber = 1)
         {
             ApplicationUser currentUser = await _userManager.GetUserAsync(User);
             IList<string> roles = await _userManager.GetRolesAsync(currentUser);
+
+            int pageSize = 3;
 
             ProjectListViewModel vm = new()
             {
                 OrderBy = orderBy,
                 OrderDirection = orderDirection,
                 ShowCompleted = showCompleted,
-                ShowAssigned = showAssigned
+                ShowAssigned = showAssigned,
+                CurrentPage = pageNumber,
             };
 
             if (await _userManager.IsInRoleAsync(currentUser, "Developer"))
@@ -88,11 +98,25 @@ namespace TaskManagementSystem.Controllers
                             tasks = tasks.OrderByDescending(t => t.Priority);
                         }
                         break;
-                }
+                };
+
                 project.Tasks = tasks.ToHashSet();
             }
 
-            vm.Projects = vm.Projects.OrderBy(p => p.Title);
+            vm.Projects = vm.Projects.OrderBy(p => p.Title, StringComparer.OrdinalIgnoreCase);
+
+            int totalProjects = vm.Projects.Count();
+            int totalPages = (int)Math.Ceiling((decimal)totalProjects / pageSize);
+            int skip = (pageNumber - 1) * pageSize;
+            vm.Projects = vm.Projects.Skip(skip).Take(pageSize);
+
+            vm.Pagination = new PaginationViewModel()
+            {
+                TotalPages = totalPages,
+                CurrentPage = pageNumber,
+                PageSize = pageSize
+            };
+
             return View(vm);
         }
 
