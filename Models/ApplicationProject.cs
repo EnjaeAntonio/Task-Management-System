@@ -15,7 +15,7 @@ namespace TaskManagementSystem.Models
         [Display(Name = "Project Manager")]
         public virtual ApplicationUser? ProjectManager { get; set; } = null!;
 
-        public virtual HashSet<ApplicationTask> Tasks { get; } = new();
-        public HashSet<ProjectDeveloper> Developers { get; set; } = new();
+        public virtual HashSet<ApplicationTask> Tasks { get; set; } = new();
+        public virtual HashSet<ProjectDeveloper> Developers { get; set; } = new();
     }
 }

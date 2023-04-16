@@ -13,7 +13,7 @@ namespace TaskManagementSystem.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationContext _context;
 
-        private readonly IEnumerable<SelectListItem> _assignableRoles = new List<SelectListItem>()
+        private static readonly List<SelectListItem> _assignableRoles = new()
         {
             new SelectListItem("Developer", "Developer"),
             new SelectListItem("Project Manager", "Project Manager")
@@ -29,11 +29,11 @@ namespace TaskManagementSystem.Controllers
         {
             List<ApplicationUser> users = new();
 
-            foreach (ApplicationUser user in _context.Users.AsEnumerable())
+            foreach (ApplicationUser user in _userManager.Users)
                 if ((await _userManager.GetRolesAsync(user)).Count == 0)
                     users.Add(user);
 
-            return View(new AssignRoleVM()
+            return View(new AssignRoleViewModel()
             {
                 Users = users,
                 Roles = _assignableRoles
@@ -42,7 +42,7 @@ namespace TaskManagementSystem.Controllers
 
         [HttpPost, ActionName("Index")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AssignRole(string userId, [Bind("Role")] AssignRoleVM vm)
+        public async Task<IActionResult> AssignRole(string userId, [Bind("Role")] AssignRoleViewModel vm)
         {
             ApplicationUser? user = await _context.Users.FindAsync(userId);
 

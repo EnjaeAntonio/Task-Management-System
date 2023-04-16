@@ -3,7 +3,7 @@ using TaskManagementSystem.Areas.Identity.Data;
 
 namespace TaskManagementSystem.Models.ViewModels;
 
-public class AssignRoleVM
+public class AssignRoleViewModel
 {
     public IEnumerable<ApplicationUser> Users { get; set; } = null!;
     public IEnumerable<SelectListItem> Roles { get; set; } = null!;

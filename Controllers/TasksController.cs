@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Build.Framework;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Areas.Identity.Data;
 using TaskManagementSystem.Models;
@@ -18,99 +12,37 @@ namespace TaskManagementSystem.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ILogger<TasksController> _logger;
 
-
-        public TasksController(ApplicationContext context, UserManager<ApplicationUser> userManager, ILogger<TasksController> logger)
+        public TasksController(ApplicationContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
-            _logger = logger;
-        }
-
-        // GET: Tasks
-        [Authorize(Roles = "Developer")]
-        public async Task<IActionResult> Index(int? ProjectId, string OrderBy, string OrderDirection, bool? ShowCompleted, bool? ShowAssigned)
-        {
-            string currentUserId = _userManager.GetUserId(User);
-
-                var tasks = await _context.Tasks
-                  .Where(t => t.Developers.Any(td => td.User.UserName == User.Identity.Name))
-                  .Include(t => t.Project)
-                  .ToListAsync();
-
-   
-            if (ProjectId.HasValue)
-            {
-                tasks = tasks
-                    .Where(t => t.ApplicationProjectId == ProjectId.Value)
-                    .ToList();
-            }
-
-            if (!ShowCompleted.GetValueOrDefault())
-            {
-                tasks = tasks
-                    .Where(t => !t.Completed)
-                    .ToList();
-            }
-
-            if (!ShowAssigned.GetValueOrDefault())
-            {
-                tasks = tasks
-                    .Where(t => !t.Developers.Any())
-                    .ToList();
-            }
-
-            switch (OrderBy)
-            {
-                case "RequiredHours":
-                    if (OrderDirection == "Ascending")
-                    {
-                        tasks = tasks.OrderBy(t => t.RequiredHours).ToList();
-                    }
-                    else
-                    {
-                        tasks = tasks.OrderByDescending(t => t.RequiredHours).ToList();
-                    }
-                    break;
-                case "Priority":
-                    if (OrderDirection == "Ascending")
-                    {
-                        tasks = tasks.OrderBy(t => t.Priority).ToList();
-                    }
-                    else
-                    {
-                        tasks = tasks.OrderByDescending(t => t.Priority).ToList();
-                    }
-                    break;
-            }
-
-            return View(tasks);
         }
 
         [Authorize(Roles = "Project Manager")]
-        public async Task<IActionResult> Assign(int? taskId, int? projectId)
+        public async Task<IActionResult> Assign(int? id)
         {
-            if (taskId == null || projectId == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var task = _context.Tasks
-                .Include(t => t.Project)
-                .FirstOrDefault(p => p.Id == taskId);
-            var project = _context.Projects.Find(projectId);
+            ApplicationTask? task = await _context.Tasks
+                .Include(t => t.Developers)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (task == null || project == null)
+            if (task == null)
             {
                 return NotFound();
             }
 
-            var developers = await _userManager.GetUsersInRoleAsync("Developer");
+            IList<ApplicationUser> developers = await _context.ProjectDevelopers
+                .Where(pd => pd.ApplicationProjectId == task.ApplicationProjectId)
+                .Select(pd => pd.User)
+                .ToListAsync();
 
-            AssignTaskViewModel viewModel = new AssignTaskViewModel()
+            AssignTaskViewModel viewModel = new()
             {
-                Project = project,
                 Task = task,
                 Developers = developers,
             };
@@ -118,71 +50,73 @@ namespace TaskManagementSystem.Controllers
             return View(viewModel);
         }
 
-
         [HttpPost]
         [Authorize(Roles = "Project Manager")]
-        public async Task<IActionResult> Assign(int? taskId, int? projectId, AssignTaskViewModel viewModel)
+        public async Task<IActionResult> Assign(AssignTaskViewModel vm)
         {
-            var project = await _context.Projects.FindAsync(projectId);
-            var task = await _context.Tasks.FindAsync(taskId);
+            ApplicationTask? task = await _context.Tasks.FindAsync(vm.TaskId);
 
             if (task == null)
             {
                 return NotFound();
             }
-            var taskDeveloper = new TaskDeveloper
+
+            //check if the user is allocated to the project
+            if (!_context.ProjectDevelopers.Any(pd => pd.ApplicationProjectId == task.ApplicationProjectId 
+                    && pd.ApplicationUserId == vm.SelectedDeveloperId))
+            {
+                return BadRequest();
+            }
+
+            TaskDeveloper taskDeveloper = new()
             {
                 ApplicationTaskId = task.Id,
-                ApplicationUserId = viewModel.SelectedDeveloperId
-            };
-
-            var projectDeveloper = new ProjectDeveloper
-            {
-                ApplicationUserId = viewModel.SelectedDeveloperId,
-                ApplicationProjectId = project.Id
+                ApplicationUserId = vm.SelectedDeveloperId
             };
 
             _context.TaskDevelopers.Add(taskDeveloper);
-            _context.ProjectDevelopers.Add(projectDeveloper);
             await _context.SaveChangesAsync();
-
             return RedirectToAction("Index", "Projects");
         }
-
 
         // GET: Tasks/Details/5
         [Authorize(Roles = "Project Manager, Developer")]
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Tasks == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var tasks = await _context.Tasks
+            ApplicationTask? task = await _context.Tasks
                 .Include(t => t.Project)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (tasks == null)
+
+            if (task == null)
             {
                 return NotFound();
             }
 
-            return View(tasks);
+            return View(task);
         }
 
         // GET: Tasks/Create
         [Authorize(Roles = "Project Manager")]
-        public IActionResult Create(int? Id)
+        public async Task<IActionResult> Create(int? projectId)
         {
-
-            if (Id == null)
+            if (projectId == null)
             {
                 return BadRequest();
             }
 
-            ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == Id);
-            ViewBag.ProjectId = project.Id;
+            ApplicationProject? project = await _context.Projects.FindAsync(projectId);
 
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.ProjectId = project.Id;
             return View();
         }
 
@@ -192,24 +126,24 @@ namespace TaskManagementSystem.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Project Manager")]
-        public async Task<IActionResult> Create(int Id, [Bind("Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
+        public async Task<IActionResult> Create([Bind("Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask task)
         {
-            ApplicationProject project = _context.Projects.FirstOrDefault(p => p.Id == Id);
-            ViewBag.ProjectId = project.Id;
+            ApplicationProject? project = await _context.Projects.FindAsync(task.ApplicationProjectId);
 
-            tasks.Project = project;
-            tasks.ApplicationProjectId = project.Id;
+            if (project == null)
+            {
+                return NotFound();
+            }
 
             if (ModelState.IsValid)
             {
-                project.Tasks.Add(tasks);
-                _context.Add(tasks);
+                _context.Tasks.Add(task);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "Projects");
             }
 
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title", tasks.ApplicationProjectId);
-            return RedirectToAction("Index", "Projects");
+            ViewBag.ProjectId = task.ApplicationProjectId;
+            return View(task);
         }
 
 
@@ -217,29 +151,28 @@ namespace TaskManagementSystem.Controllers
         [Authorize(Roles = "Project Manager, Developer")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Tasks == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var tasks = await _context.Tasks.FindAsync(id);
-            if (tasks == null)
+            ApplicationTask? task = await _context.Tasks.FindAsync(id);
+
+            if (task == null)
             {
                 return NotFound();
             }
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title", tasks.ApplicationProjectId);
-            return View(tasks);
+
+            return View(task);
         }
 
         // POST: Tasks/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Project Manager, Developer")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask tasks)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,RequiredHours,Completed,Priority,ApplicationProjectId")] ApplicationTask task)
         {
-            if (id != tasks.Id)
+            if (id != task.Id)
             {
                 return NotFound();
             }
@@ -248,12 +181,12 @@ namespace TaskManagementSystem.Controllers
             {
                 try
                 {
-                    _context.Update(tasks);
+                    _context.Tasks.Update(task);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TasksExists(tasks.Id))
+                    if (!TasksExists(task.Id))
                     {
                         return NotFound();
                     }
@@ -262,30 +195,31 @@ namespace TaskManagementSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Projects");
             }
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Title", tasks.ApplicationProjectId);
-            return View(tasks);
+
+            return View(task);
         }
 
         // GET: Tasks/Delete/5
         [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Tasks == null)
+            if (id == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            var tasks = await _context.Tasks
+            ApplicationTask? task = await _context.Tasks
                 .Include(t => t.Project)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (tasks == null)
+
+            if (task == null)
             {
                 return NotFound();
             }
 
-            return View(tasks);
+            return View(task);
         }
 
         // POST: Tasks/Delete/5
@@ -294,23 +228,20 @@ namespace TaskManagementSystem.Controllers
         [Authorize(Roles = "Project Manager")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Tasks == null)
+            ApplicationTask? task = await _context.Tasks.FindAsync(id);
+
+            if (task != null)
             {
-                return Problem("Entity set 'ApplicationContext.Tasks'  is null.");
+                _context.Tasks.Remove(task);
             }
-            var tasks = await _context.Tasks.FindAsync(id);
-            if (tasks != null)
-            {
-                _context.Tasks.Remove(tasks);
-            }
-            
+
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Projects");
         }
 
         private bool TasksExists(int id)
         {
-          return (_context.Tasks?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Tasks?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

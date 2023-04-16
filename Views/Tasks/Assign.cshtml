@@ -7,15 +7,15 @@
 
 <h2>Assign Developer to Task: @Model.Task.Title</h2>
 
-<form asp-controller="Tasks" asp-action="Assign" method="post">
-    <input type="hidden" name="taskId" value="@Model.Task.Id" />
-    <input type="hidden" name="projectId" value="@Model.Project.Id" />
+<form asp-action="Assign">
+    <input type="hidden" asp-for="TaskId" value="@Model.Task.Id" />
     <div class="form-group">
-        <label asp-for="SelectedDeveloperId">Developer</label>
-        <select asp-for="SelectedDeveloperId" class="form-control" asp-items="@(new SelectList(Model.Developers, "Id", "UserName"))">
-            <option value="">-- Select Developer --</option>
+        <label asp-for="SelectedDeveloperId">Select Developer</label>
+        <select asp-for="SelectedDeveloperId" class="form-select" asp-items="@(new SelectList(Model.Developers, "Id", "UserName"))">
         </select>
-        <p>Selected developer ID: @Model.SelectedDeveloperId</p>
     </div>
-    <button type="submit" class="btn btn-primary">Assign</button>
+    <div class="form-group">
+        <input type="submit" class="btn btn-primary" value="Assign" />
+        <a asp-controller="Projects" asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+    </div>
 </form>
